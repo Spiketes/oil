@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能全能油耗计算器（无BUG版）</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑}
+        body{background:#f0f4f8;padding:30px;max-width:700px;margin:0 auto}
+        .box{background:#fff;border-radius:14px;padding:25px;box-shadow:0 4px 15px #00000015}
+        h2{text-align:center;color:#222;margin-bottom:25px;padding-bottom:12px;border-bottom:2px solid #2980b9}
+        .row{display:flex;flex-wrap:wrap;gap:15px;margin:12px 0;align-items:center}
+        .item{flex:1;min-width:220px}
+        label{display:block;color:#444;margin-bottom:6px;font-weight:500}
+        input{width:100%;padding:10px 12px;border:1px solid #ccd6e0;border-radius:6px;font-size:15px}
+        .res-box{margin-top:25px;padding:20px;background:#f6faff;border-radius:10px;border-left:4px solid #2980b9}
+        .res-title{font-size:17px;font-weight:bold;color:#2980b9;margin-bottom:15px}
+        .res-item{font-size:15px;color:#333;margin:8px 0}
+        .empty{color:#999}
+        .btn-wrap{margin-top:20px;text-align:center}
+        .reset-btn{
+            padding:9px 28px;
+            background:#e74c3c;
+            color:#fff;
+            border:none;
+            border-radius:6px;
+            font-size:15px;
+            cursor:pointer;
+        }
+        .reset-btn:hover{background:#c0392b;}
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>智能互通油耗计算器</h2>
+
+        <div class="row">
+            <div class="item">
+                <label>行驶里程(公里)</label>
+                <input type="number" step="0.01" id="mile">
+            </div>
+            <div class="item">
+                <label>总耗油量(升)</label>
+                <input type="number" step="0.01" id="oilTotal">
+            </div>
+        </div>
+        <div class="row">
+            <div class="item">
+                <label>当前油价(元/升)</label>
+                <input type="number" step="0.01" id="price">
+            </div>
+            <div class="item">
+                <label>百公里油耗(L/100km)</label>
+                <input type="number" step="0.01" id="oil100">
+            </div>
+        </div>
+
+        <div class="btn-wrap">
+            <button class="reset-btn" onclick="clearAllData()">一键清空所有数据</button>
+        </div>
+
+        <div class="res-box">
+            <div class="res-title">实时计算结果</div>
+            <div id="resultShow" class="empty">请输入任意数据自动计算</div>
+        </div>
+    </div>
+
+<script>
+let inputs = document.querySelectorAll('input');
+inputs.forEach(inp=>{
+    inp.addEventListener('input', calcAll)
+})
+
+// 一键归零
+function clearAllData(){
+    document.getElementById('mile').value = '';
+    document.getElementById('oilTotal').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('oil100').value = '';
+    document.getElementById('resultShow').innerHTML = '<span class="empty">请输入任意数据自动计算</span>';
+}
+
+function calcAll(){
+    let mile = parseFloat(document.getElementById('mile').value) || 0;
+    let oilTotal = parseFloat(document.getElementById('oilTotal').value) || 0;
+    let price = parseFloat(document.getElementById('price').value) || 0;
+    let oil100 = parseFloat(document.getElementById('oil100').value) || 0;
+
+    let html = "";
+    let hasData = false;
+
+    // 只计算，不自动覆盖输入框，彻底解决无法输入小数问题
+    if(oilTotal > 0 && oil100 > 0){
+        let calcMile = (oilTotal / oil100) * 100;
+        html += `<div class="res-item">✅ 可行驶里程：${calcMile.toFixed(2)} 公里</div>`;
+        hasData = true;
+    }
+
+    if(mile > 0 && oil100 > 0){
+        let calcOilTotal = (mile * oil100) / 100;
+        html += `<div class="res-item">✅ 总耗油量：${calcOilTotal.toFixed(2)} 升</div>`;
+        hasData = true;
+    }
+
+    if(mile > 0 && oilTotal > 0){
+        let calcOil100 = (oilTotal / mile) * 100;
+        html += `<div class="res-item">✅ 百公里油耗：${calcOil100.toFixed(2)} L/100km</div>`;
+        hasData = true;
+    }
+
+    if(oil100 > 0 && price > 0){
+        let perLitreKm = 100 / oil100;
+        let hundredYuanKm = (100 / price) * perLitreKm;
+        html += `<div class="res-item">✅ 每升油可跑：${perLitreKm.toFixed(2)} 公里</div>`;
+        html += `<div class="res-item">✅ 100元可跑：${hundredYuanKm.toFixed(2)} 公里</div>`;
+        hasData = true;
+    }
+
+    if(oilTotal > 0 && price > 0){
+        let totalCost = oilTotal * price;
+        html += `<div class="res-item">✅ 加油总费用：${totalCost.toFixed(2)} 元</div>`;
+        hasData = true;
+    }
+
+    if(oil100 > 0 && price > 0){
+        let perKmMoney = (oil100 * price) / 100;
+        html += `<div class="res-item">✅ 每公里花费：${perKmMoney.toFixed(2)} 元</div>`;
+        hasData = true;
+    }
+
+    if(!hasData){
+        document.getElementById('resultShow').innerHTML = '<span class="empty">请输入任意数据自动计算</span>';
+    }else{
+        document.getElementById('resultShow').innerHTML = html;
+    }
+}
+</script>
+</body>
+</html>
